@@ -122,7 +122,13 @@ A ticketless event management system using Civic Auth for Web3 authentication an
 
 ### API Endpoints
 
+- `GET /api/me`: Ensure user exists (auto-signup) and return user
+- `POST /api/me`: Update user wallet address
+- `GET /api/events`: List events
+- `POST /api/events`: Create event (requires auth)
+- `GET /api/events/:id`: Get event detail
 - `POST /api/rsvp`: Create RSVP and generate ticket token
+- `GET /api/tickets`: List RSVPs for current user with event info
 - `POST /api/checkin`: Validate ticket and record check-in
 
 ### Deployment
@@ -135,9 +141,13 @@ A ticketless event management system using Civic Auth for Web3 authentication an
 ### Hackathon Demo
 
 **Demo Video Script (2 minutes)**:
-1. Open `/` → click Sign in → show email + wallet address + balance
+1. Open `/` → click Sign in → show email + wallet address + balance (auto user created)
 2. Go to `/events` → click RSVP → show QR code generation
-3. Open `/my-tickets` → display QR codes
+3. Open `/my-tickets` → display real tickets from API
 4. Open `/scan` (organizer) → scan QR with camera → "Check-in successful"
+
+### QR Format
+
+- Ticket QR links to `/ticket/{token}`. Check-in derives `eventId` from the RSVP record.
 
 **Project Description**: "Ticketless is a Web3-native event management platform that eliminates physical tickets through Civic Auth embedded wallets and QR code verification, providing seamless check-in experiences for both attendees and organizers."

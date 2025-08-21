@@ -30,7 +30,7 @@ export default function EventPage() {
 			{token && (
 				<div className="space-y-2">
 					<p>Your ticket QR:</p>
-					<QRCode value={`${location.origin}/t/${token}`} />
+					<QRCode value={`${location.origin}/ticket/${token}`} />
 				</div>
 			)}
 		</div>

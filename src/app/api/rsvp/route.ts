@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@civic/auth-web3/nextjs";
+import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
 	try {
-		const user = await getUser();
+		const user = await getSessionUser();
 		if (!user) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -15,18 +15,10 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 		}
 
-		// Check if user already exists in database, create if not
-		let dbUser = await prisma.user.findUnique({
-			where: { email: user.email },
-		});
-
+		// Use current session user
+		const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
 		if (!dbUser) {
-			dbUser = await prisma.user.create({
-				data: {
-					email: user.email,
-					walletAddress: walletAddress,
-				},
-			});
+			return NextResponse.json({ error: "User not found" }, { status: 404 });
 		}
 
 		// Check if already RSVP'd

@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@civic/auth-web3/nextjs";
+import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
 	try {
-		const organizer = await getUser();
+		const organizer = await getSessionUser();
 		if (!organizer) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const { token, eventId, walletAddress } = await req.json();
-		if (!token || !eventId || !walletAddress) {
+		const { token, walletAddress } = await req.json();
+		if (!token || !walletAddress) {
 			return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 		}
 
@@ -21,6 +21,22 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
 		}
 
+		// Find RSVP by token (and wallet), and derive eventId if not provided
+		const rsvp = await prisma.rSVP.findFirst({
+			where: {
+				ticketToken: token,
+				walletAddress: walletAddress,
+			},
+			include: { user: true },
+		});
+
+		if (!rsvp) {
+			return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+		}
+
+		const eventId = rsvp.eventId;
+
+		// Verify ticket token with resolved eventId
 		const expected = crypto
 			.createHmac("sha256", secret)
 			.update(`${eventId}|${walletAddress}`)
@@ -28,22 +44,6 @@ export async function POST(req: Request) {
 
 		if (token !== expected) {
 			return NextResponse.json({ error: "Invalid ticket" }, { status: 400 });
-		}
-
-		// Find the RSVP
-		const rsvp = await prisma.rSVP.findFirst({
-			where: {
-				ticketToken: token,
-				eventId: eventId,
-				walletAddress: walletAddress,
-			},
-			include: {
-				user: true,
-			},
-		});
-
-		if (!rsvp) {
-			return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
 		}
 
 		// Check if already checked in

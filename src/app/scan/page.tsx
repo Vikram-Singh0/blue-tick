@@ -62,12 +62,11 @@ export default function ScanPage() {
 		try {
 			const url = new URL(decoded);
 			const token = url.pathname.split("/ticket/")[1];
-			const eventId = url.searchParams.get("eventId") || "unknown";
 
 			const response = await fetch("/api/checkin", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ token, eventId, walletAddress: address }),
+				body: JSON.stringify({ token, walletAddress: address }),
 			});
 
 			if (response.ok) {

@@ -2,45 +2,39 @@
 
 import { useUser } from "@civic/auth-web3/react";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { UserButton } from "@civic/auth-web3/react";
 
-// Sample events data
-const sampleEvents = [
-	{
-		id: "1",
-		title: "Web3 Developer Meetup",
-		description: "Join fellow developers for an evening of networking and technical discussions about the latest in Web3 development.",
-		date: "2025-01-15T18:00:00Z",
-		location: "Tech Hub Downtown",
-		organizer: "Civic Labs",
-		attendees: 45,
-	},
-	{
-		id: "2",
-		title: "Blockchain Conference 2025",
-		description: "A comprehensive conference covering blockchain technology, DeFi, and the future of decentralized applications.",
-		date: "2025-02-20T09:00:00Z",
-		location: "Convention Center",
-		organizer: "Blockchain Events Inc",
-		attendees: 120,
-	},
-	{
-		id: "3",
-		title: "Crypto Art Exhibition",
-		description: "Explore the intersection of art and blockchain technology with exclusive NFT exhibitions and artist talks.",
-		date: "2025-01-30T14:00:00Z",
-		location: "Modern Art Gallery",
-		organizer: "Digital Art Collective",
-		attendees: 78,
-	},
-];
+interface EventItem {
+	id: string;
+	title: string;
+	description: string | null;
+	date: string;
+	location: string | null;
+}
 
 export default function EventsPage() {
 	const { user } = useUser();
 	const { address } = useAccount();
 	const [rsvpStatus, setRsvpStatus] = useState<Record<string, string>>({});
+	const [events, setEvents] = useState<EventItem[]>([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const fetchEvents = async () => {
+			try {
+				const res = await fetch("/api/events");
+				const data = await res.json();
+				setEvents(data.events || []);
+			} catch (e) {
+				setEvents([]);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchEvents();
+	}, []);
 
 	const handleRSVP = async (eventId: string) => {
 		if (!address) return;
@@ -110,7 +104,18 @@ export default function EventsPage() {
 
 				{/* Events Grid */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{sampleEvents.map((event) => (
+					{loading ? (
+						<div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+							<p className="mt-4 text-gray-600">Loading events...</p>
+						</div>
+					) : events.length === 0 ? (
+						<div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+							<div className="text-6xl mb-4">📭</div>
+							<h2 className="text-2xl font-semibold text-gray-700 mb-4">No events yet</h2>
+							<p className="text-gray-600">Check back later or create one via API</p>
+						</div>
+					) : events.map((event) => (
 						<div key={event.id} className="bg-white rounded-lg shadow-md overflow-hidden">
 							<div className="p-6">
 								<h3 className="text-xl font-semibold text-gray-900 mb-2">

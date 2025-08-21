@@ -1,16 +1,35 @@
-import { authMiddleware } from '@civic/auth/nextjs/middleware'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export default authMiddleware();
+const SESSION_COOKIE = 'session_token'
+
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
+  // Public routes
+  if (
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/signin') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/_next') ||
+    pathname.match(/\.(jpg|png|svg|gif)$/)
+  ) {
+    return NextResponse.next()
+  }
+
+  const session = req.cookies.get(SESSION_COOKIE)?.value
+  if (!session) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/signin'
+    url.searchParams.set('next', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  return NextResponse.next()
+}
 
 export const config = {
-  // include the paths you wish to secure here
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next directory (Next.js static files)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - image files
-     */
-    '/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*\.jpg|.*\.png|.*\.svg|.*\.gif).*)',
+    '/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*\\.jpg|.*\\.png|.*\\.svg|.*\\.gif).*)',
   ],
 }

@@ -24,33 +24,20 @@ export default function MyTicketsPage() {
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		if (user && address) {
-			// For demo, we'll create sample tickets
-			// In production, this would fetch from your API
-			const sampleTickets: Ticket[] = [
-				{
-					id: "1",
-					eventId: "1",
-					eventTitle: "Web3 Developer Meetup",
-					eventDate: "2025-01-15T18:00:00Z",
-					eventLocation: "Tech Hub Downtown",
-					ticketToken: "sample-token-1",
-					createdAt: "2025-01-10T10:00:00Z",
-				},
-				{
-					id: "2",
-					eventId: "2",
-					eventTitle: "Blockchain Conference 2025",
-					eventDate: "2025-02-20T09:00:00Z",
-					eventLocation: "Convention Center",
-					ticketToken: "sample-token-2",
-					createdAt: "2025-01-12T14:30:00Z",
-				},
-			];
-			setTickets(sampleTickets);
-			setLoading(false);
-		}
-	}, [user, address]);
+		if (!user) return;
+		const fetchTickets = async () => {
+			try {
+				const res = await fetch("/api/tickets");
+				const data = await res.json();
+				setTickets(data.tickets || []);
+			} catch (e) {
+				setTickets([]);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchTickets();
+	}, [user]);
 
 	const formatDate = (dateString: string) => {
 		return new Date(dateString).toLocaleDateString("en-US", {
