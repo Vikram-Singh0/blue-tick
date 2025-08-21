@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  walletAddress String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  rsvps     RSVP[]
+  checkIns  CheckIn[]
+  events    Event[]    @relation("EventOrganizer")
+  
+  @@map("users")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  location    String?
+  organizerId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  organizer User     @relation("EventOrganizer", fields: [organizerId], references: [id])
+  rsvps     RSVP[]
+  checkIns  CheckIn[]
+  
+  @@map("events")
+}
+
+model RSVP {
+  id           String   @id @default(cuid())
+  userId       String
+  eventId      String
+  walletAddress String
+  ticketToken  String   @unique
+  createdAt    DateTime @default(now())
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+  
+  @@unique([userId, eventId])
+  @@map("rsvps")
+}
+
+model CheckIn {
+  id           String   @id @default(cuid())
+  userId       String
+  eventId      String
+  walletAddress String
+  checkedInAt  DateTime @default(now())
+  
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+  
+  @@unique([userId, eventId])
+  @@map("check_ins")
+}

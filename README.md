@@ -34,3 +34,110 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## 🎟️ Ticketless - Civic Auth Web3 Hackathon Project
+
+A ticketless event management system using Civic Auth for Web3 authentication and embedded wallets.
+
+### Features
+
+- **Civic Auth Integration**: Seamless Web3 login with embedded wallet creation
+- **Event RSVP System**: Users can RSVP to events and receive QR code tickets
+- **QR Code Scanning**: Organizers can scan tickets for check-in
+- **PostgreSQL Database**: Persistent storage for users, events, RSVPs, and check-ins
+- **Modern UI**: Clean, responsive interface built with Tailwind CSS
+
+### Tech Stack
+
+- **Frontend**: Next.js 14, React 18, Tailwind CSS
+- **Authentication**: Civic Auth Web3
+- **Database**: PostgreSQL with Prisma ORM
+- **Wallet**: Embedded wallets via Civic
+- **QR Codes**: react-qr-code for generation, @zxing/browser for scanning
+
+### Setup Instructions
+
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Environment Configuration**
+   Create `.env.local` file:
+   ```bash
+   # Civic Auth Configuration
+   NEXT_PUBLIC_CIVIC_CLIENT_ID=your_civic_client_id_here
+   
+   # Database Configuration (PostgreSQL)
+   DATABASE_URL="postgresql://username:password@localhost:5432/blue_tick_db"
+   
+   # Ticket Security
+   TICKET_SECRET=your_strong_random_secret_here
+   ```
+
+3. **Database Setup**
+   ```bash
+   # Generate Prisma client
+   npm run db:generate
+   
+   # Push schema to database
+   npm run db:push
+   
+   # Optional: Open Prisma Studio
+   npm run db:studio
+   ```
+
+4. **Civic Auth Setup**
+   - Sign up at [auth.civic.com](https://auth.civic.com)
+   - Create an app and get your Client ID
+   - Add `http://localhost:3000` to Allowed Origins
+   - Update `NEXT_PUBLIC_CIVIC_CLIENT_ID` in `.env.local`
+
+5. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+
+### Application Flow
+
+1. **User Journey**:
+   - Sign in with Civic Auth → embedded wallet auto-creates
+   - Browse events at `/events`
+   - RSVP to events → receive QR code ticket
+   - View tickets at `/my-tickets`
+
+2. **Organizer Journey**:
+   - Access scanner at `/scan`
+   - Scan attendee QR codes
+   - Confirm check-ins
+
+### Database Schema
+
+- **Users**: Email, wallet address, creation date
+- **Events**: Title, description, date, location, organizer
+- **RSVPs**: User-event relationship with ticket tokens
+- **Check-ins**: Attendance tracking with timestamps
+
+### API Endpoints
+
+- `POST /api/rsvp`: Create RSVP and generate ticket token
+- `POST /api/checkin`: Validate ticket and record check-in
+
+### Deployment
+
+1. **Database**: Set up PostgreSQL (Vercel Postgres, Supabase, etc.)
+2. **Environment**: Configure production environment variables
+3. **Deploy**: Deploy to Vercel or your preferred platform
+4. **Civic**: Add production domain to Civic Auth Allowed Origins
+
+### Hackathon Demo
+
+**Demo Video Script (2 minutes)**:
+1. Open `/` → click Sign in → show email + wallet address + balance
+2. Go to `/events` → click RSVP → show QR code generation
+3. Open `/my-tickets` → display QR codes
+4. Open `/scan` (organizer) → scan QR with camera → "Check-in successful"
+
+**Project Description**: "Ticketless is a Web3-native event management platform that eliminates physical tickets through Civic Auth embedded wallets and QR code verification, providing seamless check-in experiences for both attendees and organizers."
